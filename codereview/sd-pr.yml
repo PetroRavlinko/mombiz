@@ -1,0 +1,31 @@
+resource_types:
+  - name: bitbucket-pr
+    type: registry-image
+    source:
+      repository: n7docker/concourse-bitbucket-pr
+
+resources:
+  - name: pull-request
+    type: bitbucket-pr
+    check_every: 1h
+    source:
+      workspace: safedigit
+      slug: integrations/backend
+      username: ((ci_user))
+      password: ((ci_pass))
+      debug: true
+
+jobs:
+  - name: foo
+    plan:
+      - get: pull-request
+        trigger: true
+        version: every
+      - put: pull-request
+        params:
+          repo_path: pull-request
+          action: set:commit.build.status
+          status: INPROGRESS
+          url: example.com
+          name: PR resource test
+          description: Some userful description
